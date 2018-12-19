@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <HelloWorld/>
+    <ul class="wrap">
+      <li
+        v-for="(item, index) in 16"
+        :key="index"
+        class="box" />
+    </ul>
   </div>
 </template>
 
@@ -16,12 +21,30 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+#app ul {
+  list-style:none;
+  display:inline-block;
+  margin:0;
+  padding:0;
+  position:relative;
+  height:7.5rem;
+  width:100%;
+  border: 1px solid #ccc;
+}
+#app ul li {
+  float: left;
+  width: 25%;
+  height: 25%;
+  line-height:200%;
+  text-align:center;
+  cursor:pointer;
+  background: hsla(30,37%,89%,.35);
+  border: 1px solid #ccc;
+  box-shadow: 1px 1px 4px;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
