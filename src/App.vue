@@ -53,20 +53,7 @@ export default {
       list: [],
       size: 4,
       probability: 0.9,
-      isAddNewCell: false,
-      direction: [{
-        x: 0,
-        y: -1
-      }, {
-        x: 0,
-        y: 1
-      }, {
-        x: -1,
-        y: 0
-      }, {
-        x: 1,
-        y: 0
-      }]
+      isAddNewCell: false
     }
   },
 
@@ -89,6 +76,7 @@ export default {
       this.score = 0
       this.over = false
       this.list = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
+      // 开局随机出现两个格子
       this.add_new_cell()
       this.add_new_cell()
     },
@@ -132,48 +120,25 @@ export default {
     random_num (num) {
       return Math.floor(Math.random() * num)
     },
-    is_same_list (oldList, newList) {
-      for (let i = 0; i < oldList.length; i++) {
-        if (oldList[i].toString() !== newList[i].toString()) {
-          return false
-        }
-      }
-      return !this.has_merged_cells() && true
-    },
     /**
-     * 是否有合并
+     * 根据移动前后的二维数组作对比以判断格子是否有移动
      */
-    has_merged_cells () {
-      for (let i = 0; i < this.size; i++) {
-        for (let j = 0; j < this.size; j++) {
-          let cell = this.list[i][j]
-          if (cell) {
-            for (let dir = 0; dir < 4; dir++) {
-              let vector = this.direction[dir]
-              if (this.within_bounds(i + vector.x, j + vector.y)) {
-                let other = this.list[i + vector.x][j + vector.y]
-                if (other && other === cell) {
-                  return true
-                }
-              }
-            }
+    is_same_list (oldList, newList) {
+      for (var i = 0; i < oldList.length; i++) {
+        for (var j = 0; j < oldList[i].length; j++) {
+          if (oldList[i][j] !== newList[i][j]) {
+            return false
           }
         }
       }
-      return false
-    },
-    /**
-     * 看其是否在边界内
-     */
-    within_bounds (x, y) {
-      return x > 0 && y > 0 && x < this.size && y < this.size
+      return true
     },
     /**
      * 监听键盘事件
      */
     key_down (e) {
       let oldList = this.list
-      console.log(oldList)
+      // console.log(oldList)
       switch (e.keyCode) {
         // 左键
         case 37:
@@ -192,25 +157,27 @@ export default {
           this.clockwise_rotation(3)
           break
       }
-      console.log(this.list)
-      console.log(this.is_same_list(oldList, this.list))
-      this.has_available_cells() && !this.is_same_list(oldList, this.list) && this.add_new_cell()
+      if (this.has_available_cells() && !this.is_same_list(oldList, this.list)) {
+        this.add_new_cell()
+      }
     },
     /**
      * 矩阵顺旋转次数
      */
     clockwise_rotation (times) {
+      // 矩阵逆时针旋转times次
       let arr = this.unticlockwise_rotation(Array.from(this.list), times).map((item, index) => {
         return this.move_left(item)
       })
+      // 旋转回来
       this.list = this.unticlockwise_rotation(arr, this.size - times)
     },
     /**
      * 矩阵逆旋转
      */
     unticlockwise_rotation (arr, n) {
-      n = n % 4
-      if (n === 0) {
+      // 向左边移动时保持数组不变
+      if (n % 4 === 0) {
         return arr
       }
       let tmp = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
@@ -251,12 +218,10 @@ export default {
             value: next * 2
           }
           this.score += next * 2
-          // this.isAddNewCell = true
         } else if (farthest !== item.x) {
           list[farthest] = item.value
           list[item.x] = undefined
           item.x = farthest
-          // this.isAddNewCell = false
         }
       })
       return list
