@@ -3,17 +3,19 @@
     <div class="header">
       <h1 class="title">2048</h1>
       <div class="score">
-        <div>
+        <div class="text_style">
           <div>SCORE</div>
           <div class="score_num">{{ score }}</div>
         </div>
-        <div>
+        <div class="text_style">
           <div>BEST</div>
           <div class="score_num">{{ best_score }}</div>
         </div>
       </div>
     </div>
-    <div class="btn btn-mg">新游戏</div>
+    <div
+      class="btn btn-mg"
+      @click="new_game">New game</div>
     <div>
       <div
         class="over"
@@ -29,7 +31,8 @@
           <div
             v-for="(col, index) in row"
             :key="index"
-            class="col">
+            class="col"
+            :class="'n-'+col">
               {{ col }}
             </div>
         </div>
@@ -48,7 +51,8 @@ export default {
       best_score: 0,
       over: false,
       list: [],
-      size: 4
+      size: 4,
+      probability: 0.9
     }
   },
 
@@ -57,19 +61,64 @@ export default {
   },
 
   methods: {
-    // 初始化数组，开始一句新的游戏
+    /**
+     *  初始化游戏
+     */
     init () {
       this.new_game()
     },
-
+    /**
+     * 初始化数组，开始一局新的游戏
+     */
     new_game () {
       this.score = 0
       this.over = false
       this.list = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
-      console.log(this.list)
+      this.add_new_cell()
+      this.add_new_cell()
+    },
+    /**
+     * 添加一个空格子
+     */
+    add_new_cell () {
+      let hasAvailableCells = !!this.available_space_cells().length
+      if (hasAvailableCells) {
+        let [x, y] = this.gat_random_available_space_cell()
+        // 出现2 和 4的概率比为9 : 1
+        this.list[x][y] = Math.random() < this.probability ? 2 : 4
+      }
+    },
+
+    /**
+     * 获取所有的空格子坐标
+     */
+    available_space_cells () {
+      let spaceCells = []
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          if (!this.list[i][j]) {
+            spaceCells.push([i, j])
+          }
+        }
+      }
+      return spaceCells
+    },
+    /**
+     * 随机获取一个空格子坐标
+     */
+    gat_random_available_space_cell () {
+      let cells = this.available_space_cells()
+      if (cells.length) {
+        return cells[this.random_num(cells.length)]
+      }
+    },
+    /**
+     * 获取指定范围内的随机数
+     */
+    random_num (num) {
+      return Math.floor(Math.random() * num)
     }
   }
-
 }
 </script>
 
