@@ -66,6 +66,7 @@ export default {
      */
     init () {
       this.new_game()
+      document.addEventListener('keyup', this.key_down)
     },
     /**
      * 初始化数组，开始一局新的游戏
@@ -117,6 +118,104 @@ export default {
      */
     random_num (num) {
       return Math.floor(Math.random() * num)
+    },
+    /**
+     * 监听键盘事件
+     */
+    key_down (e) {
+      switch (e.keyCode) {
+        // 左键
+        case 37:
+          this.clockwise_rotation(0)
+          break
+        // 上键
+        case 38:
+          this.clockwise_rotation(1)
+          break
+        // 右键
+        case 339:
+          this.clockwise_rotation(2)
+          break
+        // 下键
+        case 340:
+          this.clockwise_rotation(3)
+          break
+      }
+    },
+    /**
+     * 矩阵顺旋转次数
+     */
+    clockwise_rotation (times) {
+      let arr = this.unticlockwise_rotation(Array.from(this.list), times).map((item, index) => {
+        return this.move_left(item)
+      })
+      this.list = this.unticlockwise_rotation(arr, this.size - times)
+    },
+    /**
+     * 矩阵逆旋转
+     */
+    unticlockwise_rotation (arr, n) {
+      n = n % 4
+      if (n === 0) {
+        return arr
+      }
+      let tmp = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          tmp[this.size - 1 - i][j] = arr[j][i]
+        }
+      }
+      if (n > 1) {
+        tmp = this.unticlockwise_rotation(tmp, n - 1)
+      }
+      return tmp
+    },
+    /**
+     * 矩阵左移
+     */
+    move_left (list) {
+      // 非空格子列表
+      let nonEmptyLists = []
+      for (let i = 0; i < this.size; i++) {
+        if (list[i]) {
+          nonEmptyLists.push({
+            x: i,
+            merged: false,
+            value: list[i]
+          })
+        }
+      }
+      nonEmptyLists.forEach(item => {
+        let farthest = this.farthest_left_position(list, item)
+        let next = list[farthest - 1]
+        if (next && next === item.value && !nonEmptyLists[farthest - 1].merged) {
+          list[farthest - 1] = next * 2
+          list[item.x] = undefined
+          item = {
+            x: farthest - 1,
+            merged: true,
+            value: next * 2
+          }
+          this.score += next * 2
+        } else {
+          if (farthest !== item.x) {
+            list[farthest] = item.value
+            list[item.x] = undefined
+            item.x = farthest
+          }
+        }
+      })
+      return list
+    },
+    /**
+     * 每行最左边格子的x坐标
+     */
+    farthest_left_position (list, cell) {
+      let farthest = cell.x
+      while (farthest > 0 && !list[farthest - 1]) {
+        farthest -= 1
+      }
+      return farthest
     }
   }
 }
