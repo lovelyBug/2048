@@ -52,7 +52,21 @@ export default {
       over: false,
       list: [],
       size: 4,
-      probability: 0.9
+      probability: 0.9,
+      isAddNewCell: false,
+      direction: [{
+        x: 0,
+        y: -1
+      }, {
+        x: 0,
+        y: 1
+      }, {
+        x: -1,
+        y: 0
+      }, {
+        x: 1,
+        y: 0
+      }]
     }
   },
 
@@ -82,8 +96,7 @@ export default {
      * 添加一个空格子
      */
     add_new_cell () {
-      let hasAvailableCells = !!this.available_space_cells().length
-      if (hasAvailableCells) {
+      if (this.has_available_cells()) {
         let [x, y] = this.gat_random_available_space_cell()
         // 出现2 和 4的概率比为9 : 1
         this.list[x][y] = Math.random() < this.probability ? 2 : 4
@@ -119,10 +132,48 @@ export default {
     random_num (num) {
       return Math.floor(Math.random() * num)
     },
+    is_same_list (oldList, newList) {
+      for (let i = 0; i < oldList.length; i++) {
+        if (oldList[i].toString() !== newList[i].toString()) {
+          return false
+        }
+      }
+      return !this.has_merged_cells() && true
+    },
+    /**
+     * 是否有合并
+     */
+    has_merged_cells () {
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          let cell = this.list[i][j]
+          if (cell) {
+            for (let dir = 0; dir < 4; dir++) {
+              let vector = this.direction[dir]
+              if (this.within_bounds(i + vector.x, j + vector.y)) {
+                let other = this.list[i + vector.x][j + vector.y]
+                if (other && other === cell) {
+                  return true
+                }
+              }
+            }
+          }
+        }
+      }
+      return false
+    },
+    /**
+     * 看其是否在边界内
+     */
+    within_bounds (x, y) {
+      return x > 0 && y > 0 && x < this.size && y < this.size
+    },
     /**
      * 监听键盘事件
      */
     key_down (e) {
+      let oldList = this.list
+      console.log(oldList)
       switch (e.keyCode) {
         // 左键
         case 37:
@@ -133,14 +184,17 @@ export default {
           this.clockwise_rotation(1)
           break
         // 右键
-        case 339:
+        case 39:
           this.clockwise_rotation(2)
           break
         // 下键
-        case 340:
+        case 40:
           this.clockwise_rotation(3)
           break
       }
+      console.log(this.list)
+      console.log(this.is_same_list(oldList, this.list))
+      this.has_available_cells() && !this.is_same_list(oldList, this.list) && this.add_new_cell()
     },
     /**
      * 矩阵顺旋转次数
@@ -197,12 +251,12 @@ export default {
             value: next * 2
           }
           this.score += next * 2
-        } else {
-          if (farthest !== item.x) {
-            list[farthest] = item.value
-            list[item.x] = undefined
-            item.x = farthest
-          }
+          // this.isAddNewCell = true
+        } else if (farthest !== item.x) {
+          list[farthest] = item.value
+          list[item.x] = undefined
+          item.x = farthest
+          // this.isAddNewCell = false
         }
       })
       return list
@@ -216,6 +270,12 @@ export default {
         farthest -= 1
       }
       return farthest
+    },
+    /**
+     * 是否还有空格存在
+     */
+    has_available_cells () {
+      return !!this.available_space_cells().length
     }
   }
 }
