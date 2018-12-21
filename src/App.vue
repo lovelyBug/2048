@@ -154,6 +154,22 @@ export default {
       }
       return true
     },
+    /**
+     * 判断矩阵是否还可以继续合并，移动，对比矩阵内元素周围是否有和自身相等的元素
+     */
+    can_continue_move () {
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size - 1; j++) {
+          if (this.list[i][j] === this.list[i][j + 1] || this.list[j][i] === this.list[j + 1][i]) {
+            return true
+          }
+        }
+      }
+      return false
+    },
+    /**
+     * 手势滑动或者上下左右键触发的事件
+     */
     handle_move_event (code) {
       this.hasMove = false
       this.clockwise_rotation(code)
@@ -161,8 +177,8 @@ export default {
       if (this.hasMove) {
         this.add_new_cell()
       }
-      // 如果没有格子移动且已经没有空格子，说明游戏结束
-      if (!this.hasMove && !this.has_available_cells()) {
+      // 如果没有格子移动,已经没有空格子，并且没有可以合并的格子，说明游戏结束
+      if (!this.hasMove && !this.has_available_cells() && !this.can_continue_move()) {
         this.over = true
       }
     },
