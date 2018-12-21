@@ -340,7 +340,7 @@ export default {
       let bestScore = localStorage.getItem('bestscore')
       if (bestScore) {
         if (this.score > bestScore) {
-          localStorage.setItem('bestscore', bestScore)
+          localStorage.setItem('bestscore', this.score)
           this.best_score = this.score
         }
       } else {
