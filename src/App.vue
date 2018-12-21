@@ -21,7 +21,11 @@
         class="over"
         v-if="over">
         <p>Game over!</p>
-        <div class="btn">Try again</div>
+        <div
+          class="btn"
+          @click="new_game">
+          Try again
+        </div>
       </div>
       <div class="box">
         <div
@@ -53,7 +57,7 @@ export default {
       list: [],
       size: 4,
       probability: 0.9,
-      isAddNewCell: false
+      hasMove: false
     }
   },
 
@@ -137,8 +141,7 @@ export default {
      * 监听键盘事件
      */
     key_down (e) {
-      let oldList = this.list
-      // console.log(oldList)
+      this.hasMove = false
       switch (e.keyCode) {
         // 左键
         case 37:
@@ -157,8 +160,13 @@ export default {
           this.clockwise_rotation(3)
           break
       }
-      if (this.has_available_cells() && !this.is_same_list(oldList, this.list)) {
+      // 如果有格子移动，随机增加一个新格子
+      if (this.hasMove) {
         this.add_new_cell()
+      }
+      // 如果没有格子移动且已经没有空格子，说明游戏结束
+      if (!this.hasMove && !this.has_available_cells()) {
+        this.over = true
       }
     },
     /**
@@ -180,16 +188,16 @@ export default {
       if (n % 4 === 0) {
         return arr
       }
-      let tmp = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
+      let tempArr = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
       for (let i = 0; i < this.size; i++) {
         for (let j = 0; j < this.size; j++) {
-          tmp[this.size - 1 - i][j] = arr[j][i]
+          tempArr[this.size - 1 - i][j] = arr[j][i]
         }
       }
       if (n > 1) {
-        tmp = this.unticlockwise_rotation(tmp, n - 1)
+        tempArr = this.unticlockwise_rotation(tempArr, n - 1)
       }
-      return tmp
+      return tempArr
     },
     /**
      * 矩阵左移
@@ -218,10 +226,18 @@ export default {
             value: next * 2
           }
           this.score += next * 2
+          // 如果有合并，说明格子有移动
+          if (!this.hasMove) {
+            this.hasMove = true
+          }
         } else if (farthest !== item.x) {
           list[farthest] = item.value
           list[item.x] = undefined
           item.x = farthest
+          // 交换位置，说明格子有移动
+          if (!this.hasMove) {
+            this.hasMove = true
+          }
         }
       })
       return list
@@ -240,6 +256,7 @@ export default {
      * 是否还有空格存在
      */
     has_available_cells () {
+      // !!表示数据类型限制为bool
       return !!this.available_space_cells().length
     }
   }
