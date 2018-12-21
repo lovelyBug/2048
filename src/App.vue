@@ -56,6 +56,7 @@ export default {
       over: false,
       list: [],
       size: 4,
+      start: {},
       probability: 0.9,
       hasMove: false
     }
@@ -72,6 +73,8 @@ export default {
     init () {
       this.new_game()
       document.addEventListener('keyup', this.key_down)
+      document.querySelector('.box').addEventListener('touchstart', this.touch_start)
+      document.querySelector('.box').addEventListener('touchend', this.touch_end)
     },
     /**
      * 初始化数组，开始一局新的游戏
@@ -113,10 +116,24 @@ export default {
      * 随机获取一个空格子坐标
      */
     gat_random_available_space_cell () {
-      let cells = this.available_space_cells()
+      // 获取打乱后的数组
+      let cells = this.upset(this.available_space_cells())
       if (cells.length) {
         return cells[this.random_num(cells.length)]
       }
+    },
+    /**
+     * 打乱数组，让新格子出现的更加随机
+     */
+    upset (arr) {
+      let l = arr.length
+      let j
+      while (l--) {
+        j = parseInt(Math.random() * l)
+        arr[l] = arr[j]
+        arr[j] = arr[l]
+      }
+      return arr
     },
     /**
      * 获取指定范围内的随机数
@@ -137,29 +154,9 @@ export default {
       }
       return true
     },
-    /**
-     * 监听键盘事件
-     */
-    key_down (e) {
+    handle_move_event (code) {
       this.hasMove = false
-      switch (e.keyCode) {
-        // 左键
-        case 37:
-          this.clockwise_rotation(0)
-          break
-        // 上键
-        case 38:
-          this.clockwise_rotation(1)
-          break
-        // 右键
-        case 39:
-          this.clockwise_rotation(2)
-          break
-        // 下键
-        case 40:
-          this.clockwise_rotation(3)
-          break
-      }
+      this.clockwise_rotation(code)
       // 如果有格子移动，随机增加一个新格子
       if (this.hasMove) {
         this.add_new_cell()
@@ -168,6 +165,59 @@ export default {
       if (!this.hasMove && !this.has_available_cells()) {
         this.over = true
       }
+    },
+    /**
+     * 监听键盘事件
+     */
+    key_down (e) {
+      let code
+      switch (e.keyCode) {
+        // 左键
+        case 37:
+          code = 0
+          break
+        // 上键
+        case 38:
+          code = 1
+          break
+        // 右键
+        case 39:
+          code = 2
+          break
+        // 下键
+        case 40:
+          code = 3
+          break
+      }
+      this.handle_move_event(code)
+    },
+    /**
+     * 滑动开始
+     */
+    touch_start (e) {
+      this.start['x'] = e.changedTouches[0].pageX
+      this.start['y'] = e.changedTouches[0].pageY
+    },
+    /**
+     * 滑动结束
+     */
+    touch_end (e) {
+      let curPoint = e.changedTouches[0]
+      let x = curPoint.pageX - this.start.x
+      let y = curPoint.pageY - this.start.y
+      let xx = Math.abs(x)
+      let yy = Math.abs(y)
+      let code = 0
+      // 移动范围太小 不处理
+      if (xx < 50 && yy < 50) return
+      // 横向滑动
+      if (xx >= yy) {
+        code = x < 0 ? 0 : 2
+      } else {
+        // 纵向滑动
+        code = y < 0 ? 1 : 3
+      }
+      this.handle_move_event(code)
     },
     /**
      * 矩阵顺旋转次数
