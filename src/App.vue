@@ -52,12 +52,18 @@ export default {
   data () {
     return {
       score: 0,
-      best_score: 0,
+      // 最高分数，本地未保存最高分数时，最高分数显示为0
+      best_score: localStorage.getItem('bestscore') ? localStorage.getItem('bestscore') : 0,
+      // 游戏是否结束
       over: false,
+      // 列表数据源，组件mounted时填充数据
       list: [],
+      // 棋盘大小
       size: 4,
       start: {},
+      // 2 / 4 出现次数的比率
       probability: 0.9,
+      // 格子是否移动
       hasMove: false
     }
   },
@@ -177,6 +183,8 @@ export default {
       if (this.hasMove) {
         this.add_new_cell()
       }
+      // 保存最高分
+      this.save_best_score()
       // 如果没有格子移动,已经没有空格子，并且没有可以合并的格子，说明游戏结束
       if (!this.hasMove && !this.has_available_cells() && !this.can_continue_move()) {
         this.over = true
@@ -324,6 +332,21 @@ export default {
     has_available_cells () {
       // !!表示数据类型限制为bool
       return !!this.available_space_cells().length
+    },
+    /**
+     * 保存最高分数
+     */
+    save_best_score () {
+      let bestScore = localStorage.getItem('bestscore')
+      if (bestScore) {
+        if (this.score > bestScore) {
+          localStorage.setItem('bestscore', bestScore)
+          this.best_score = this.score
+        }
+      } else {
+        localStorage.setItem('bestscore', this.score)
+        this.best_score = this.score
+      }
     }
   }
 }
