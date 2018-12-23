@@ -194,7 +194,7 @@ export default {
      * 监听键盘事件
      */
     key_down (e) {
-      let code
+      let code = -1
       switch (e.keyCode) {
         // 左键
         case 37:
@@ -213,7 +213,8 @@ export default {
           code = 3
           break
       }
-      this.handle_move_event(code)
+      // 只有按下 上 下 左 右 键时才起作用
+      code !== -1 && this.handle_move_event(code)
     },
     /**
      * 滑动开始
@@ -353,6 +354,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@keyframes x0{to{left:0;}}
+.x0{animation:x0 .2s ease  forwards}
+@keyframes x25{to{left:25%;}}
+.x25{animation:x25 .2s ease  forwards}
+@keyframes x50{to{left:50%;}}
+.x50{animation:x50 .2s ease  forwards}
+@keyframes x75{to{left:75%;}}
+.x75{animation:x75 .2s ease  forwards}
+
+@keyframes y0{to{top:0;}}
+.y0{animation:y0 .2s ease  forwards}
+@keyframes y25{to{top:25%;}}
+.y25{animation:y25 .2s ease  forwards}
+@keyframes y50{to{top:50%;}}
+.y50{animation:y50 .2s ease  forwards}
+@keyframes y75{to{top:75%;}}
+.y75{animation:y75 .2s ease  forwards}
+
 .wraper {
   display: flex;
   justify-content: center;
